@@ -21,6 +21,7 @@ class UserInteraction(BaseModel):
     response: str = None
 
 class ConversationContext(BaseModel):
+    window_size: int = 3
     content: list[UserInteraction] = []
 
     @staticmethod
@@ -35,20 +36,22 @@ class ConversationContext(BaseModel):
 
         return "".join(formatted)
     
-    def update(self, interaction):
-        self.content.append(interaction)
+    def update(self, interaction: UserInteraction):
+        # Keep the last `window_size` interactions
+        self.content = self.content[-self.window_size:] + [interaction]
 
     def __str__(self):
         return self.render()
 
 if __name__ == '__main__':
 
-    context = ConversationContext()
+    context = ConversationContext(window_size=5)
     while True:
         try:
             interaction = UserInteraction()
 
             interaction.message = input("> ")
+            
             if interaction.message == 'exit':
                 break
 
