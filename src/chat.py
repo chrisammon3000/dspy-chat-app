@@ -26,6 +26,19 @@ class UserInteraction(BaseModel):
     message: str = None
     response: str = None
 
+    def serialize_by_role(self):
+        return [
+            {
+                "role": "user",
+                "content": f"{self.message}"
+            },
+            {
+                "role": "assistant",
+                "content": f"{self.response}"
+            }
+        
+        ]
+
 class ConversationContext(BaseModel):
     window_size: int = 3
     content: list[UserInteraction] = []
