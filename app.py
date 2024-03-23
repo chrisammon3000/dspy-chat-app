@@ -15,6 +15,11 @@ class ResponseWithContext(dspy.Signature):
 
 respond = dspy.ChainOfThought(ResponseWithContext)
 
+def format_interaction(interaction):
+    return f"User: {interaction['message']}\n\nAssistant: {interaction['response']}\n\n"
+
+def format_context(context):
+    return "".join(context)
 
 if __name__ == '__main__':
 
@@ -30,13 +35,15 @@ if __name__ == '__main__':
             interaction.update({'message': prompt})
 
             response = respond(
-                context=context,
+                context=format_context(context),
                 message=prompt
                 )
             
             interaction.update({'response': response.response})
             
             print(f'\n{response.response}\n')
+
+            context.append(format_interaction(interaction))
 
         except KeyboardInterrupt:
             break
