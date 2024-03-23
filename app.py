@@ -1,57 +1,22 @@
 import os
 from dotenv import find_dotenv, load_dotenv
 load_dotenv(find_dotenv());
-import streamlit as st
-from openai import OpenAI
+import dspy
 
-OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
+gpt3_turbo = dspy.OpenAI(model='gpt-3.5-turbo-1106', max_tokens=300)
+dspy.configure(lm=gpt3_turbo)
 
-st.title("ChatGPT Clone")
+if __name__ == '__main__':
 
-# openai client config
-client = OpenAI(api_key=OPENAI_API_KEY)
+    while True:
+        try:
+            prompt = input("> ")
 
-# set default model
-if "openai_model" not in st.session_state:
-    st.session_state["openai_model"] = "gpt-3.5-turbo"
+            if prompt == 'exit':
+                break
 
-# initialize chat history
-if "messages" not in st.session_state:
-    st.session_state["messages"] = []
+            response = gpt3_turbo(prompt)[0]
 
-# Display chat messages from history on app rerun
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
-
-# Accept user input
-if prompt := st.chat_input("Enter your message..."):
-
-    # add user to chat history
-    st.session_state.messages.append({
-        "role": "user",
-        "content": prompt
-    })
-
-    with st.chat_message("user"):
-        st.markdown(prompt)
-
-    # display assistant responses in chat container
-    with st.chat_message("assistant"):
-        stream = client.chat.completions.create(
-            model=st.session_state["openai_model"],
-            messages=[
-                {
-                    "role": m["role"],
-                    "content": m["content"]
-                } for m in st.session_state.messages
-            ],
-            stream=True
-        )
-
-        response = st.write_stream(stream)
-
-    st.session_state.messages.append({
-        "role": "assistant",
-        "content": response
-    })
+            print(f'\n{response}\n')
+        except KeyboardInterrupt:
+            break
