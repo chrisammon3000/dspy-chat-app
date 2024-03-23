@@ -1,6 +1,8 @@
 import os
 from dotenv import find_dotenv, load_dotenv
 load_dotenv(find_dotenv());
+from datetime import datetime
+from pytz import timezone
 from pydantic import BaseModel
 import dspy
 
@@ -15,6 +17,10 @@ class ResponseWithContext(dspy.Signature):
     response = dspy.OutputField(desc="Your response to the user within the context of the conversation")
 
 respond_cot = dspy.ChainOfThought(ResponseWithContext)
+
+local_tz = str(datetime.now().astimezone().tzinfo)
+def get_timestamp(local_tz=local_tz):
+    return datetime.now().astimezone().isoformat()[:-9] + local_tz
 
 class UserInteraction(BaseModel):
     message: str = None
@@ -50,17 +56,20 @@ if __name__ == '__main__':
         try:
             interaction = UserInteraction()
 
-            interaction.message = input("> ")
+            interaction.message = input(">>> ")
 
             if interaction.message == 'exit':
                 break
+            elif interaction.message == 'history':
+                print(context.render())
+                continue
 
             interaction.response = respond_cot(
                 context=context.render(),
                 message=interaction.message
                 ).response
                         
-            print(f'\n{interaction.response}\n')
+            print(f'\n<<< {interaction.response}\n')
 
             context.update(interaction)
 
