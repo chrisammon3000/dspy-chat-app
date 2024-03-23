@@ -1,6 +1,7 @@
 import os
 from dotenv import find_dotenv, load_dotenv
 load_dotenv(find_dotenv());
+from pydantic import BaseModel
 import dspy
 
 gpt3_turbo = dspy.OpenAI(model='gpt-3.5-turbo-1106', max_tokens=300)
@@ -13,37 +14,52 @@ class ResponseWithContext(dspy.Signature):
     message = dspy.InputField(desc="The user's message")
     response = dspy.OutputField(desc="Your response")
 
-respond = dspy.ChainOfThought(ResponseWithContext)
+respond_cot = dspy.ChainOfThought(ResponseWithContext)
 
-def format_interaction(interaction):
-    return f"User: {interaction['message']}\n\nAssistant: {interaction['response']}\n\n"
+class UserInteraction(BaseModel):
+    message: str = None
+    response: str = None
 
-def format_context(context):
-    return "".join(context)
+class ConversationContext(BaseModel):
+    content: list[UserInteraction] = []
+
+    @staticmethod
+    def _format_interaction(interaction):
+        return f"User: {interaction.message}\n\nAssistant: {interaction.response}\n\n"
+
+    def render(self):
+        formatted = [
+            self._format_interaction(interaction)
+            for interaction in self.content
+        ]
+
+        return "".join(formatted)
+    
+    def update(self, interaction):
+        self.content.append(interaction)
+
+    def __str__(self):
+        return self.render()
 
 if __name__ == '__main__':
 
-    context = []
+    context = ConversationContext()
     while True:
         try:
-            interaction = {}
+            interaction = UserInteraction()
 
-            prompt = input("> ")
-            if prompt == 'exit':
+            interaction.message = input("> ")
+            if interaction.message == 'exit':
                 break
 
-            interaction.update({'message': prompt})
+            interaction.response = respond_cot(
+                context=context.render(),
+                message=interaction.message
+                ).response
+                        
+            print(f'\n{interaction.response}\n')
 
-            response = respond(
-                context=format_context(context),
-                message=prompt
-                )
-            
-            interaction.update({'response': response.response})
-            
-            print(f'\n{response.response}\n')
-
-            context.append(format_interaction(interaction))
+            context.update(interaction)
 
         except KeyboardInterrupt:
             break
