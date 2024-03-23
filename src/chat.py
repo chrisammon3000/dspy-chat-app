@@ -2,7 +2,6 @@ import os
 from dotenv import find_dotenv, load_dotenv
 load_dotenv(find_dotenv());
 from datetime import datetime
-from pytz import timezone
 from pydantic import BaseModel
 import dspy
 
@@ -14,7 +13,7 @@ class ResponseWithContext(dspy.Signature):
 
     context = dspy.InputField(desc="The context of the conversation")
     message = dspy.InputField(desc="The user's message")
-    response = dspy.OutputField(desc="Your response to the user within the context of the conversation")
+    response = dspy.OutputField(desc="A useful response to the user's message within the context of the conversation")
 
 respond_cot = dspy.ChainOfThought(ResponseWithContext)
 
