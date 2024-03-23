@@ -6,6 +6,8 @@ import dspy
 gpt3_turbo = dspy.OpenAI(model='gpt-3.5-turbo-1106', max_tokens=300)
 dspy.configure(lm=gpt3_turbo)
 
+qa = dspy.ChainOfThought('question -> answer')
+
 if __name__ == '__main__':
 
     while True:
@@ -15,8 +17,11 @@ if __name__ == '__main__':
             if prompt == 'exit':
                 break
 
-            response = gpt3_turbo(prompt)[0]
+            response = qa(question=prompt)
 
-            print(f'\n{response}\n')
+            print(f'\n{response.answer}\n')
+
         except KeyboardInterrupt:
             break
+
+    print('\nBye!')
