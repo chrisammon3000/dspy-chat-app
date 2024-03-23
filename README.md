@@ -13,6 +13,10 @@ dspy-chat-app/
 ## Description
 Basic Chat UI with persistent memory between interactions.
 
+<p align="center">
+  <img src="img/ui.png" alt="UI" height="100%" width="90%">
+</p>
+
 ## Quickstart
 1. Clone the repository.
 2. Create a [Python virtual environment](#python-virtual-environment) and install the required packages.
