@@ -12,7 +12,7 @@ class ResponseWithContext(dspy.Signature):
 
     context = dspy.InputField(desc="The context of the conversation")
     message = dspy.InputField(desc="The user's message")
-    response = dspy.OutputField(desc="Your response")
+    response = dspy.OutputField(desc="Your response to the user within the context of the conversation")
 
 respond_cot = dspy.ChainOfThought(ResponseWithContext)
 
@@ -51,7 +51,7 @@ if __name__ == '__main__':
             interaction = UserInteraction()
 
             interaction.message = input("> ")
-            
+
             if interaction.message == 'exit':
                 break
 
